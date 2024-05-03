@@ -10,6 +10,7 @@ try:
     from OpenGL.GLU import *
     from pygame.locals import *
     import pygame
+    import math
 except ImportError:
     os.system('pip3 install PyOpenGL PyOpenGL_accelerate glfw pygame')
     import glfw
@@ -17,6 +18,7 @@ except ImportError:
     from OpenGL.GLU import *
     from pygame.locals import *
     import pygame
+    import math
 
 verticies = (
     (0.5, -0.5, -0.5),
@@ -42,18 +44,49 @@ edges = (
     (5,4),
     (5,7)
     )
+
 def Cube():
     glBegin(GL_LINES)
     for edge in edges:
         for vertex in edge:
             glVertex3fv(verticies[vertex])
     glEnd()
+
+def Pipe():
+    p = 0.125
+    d = 0.5
+    num_slices = 24
+    height = 1
+    radius = 0.25
+    GREEN = (0.18, 0.51, 0.27)
+    glBegin(GL_QUADS)
+    glColor3fv(GREEN)
+    for surface in range(0, 24):
+        glVertex3fv((p, -d, p))
+        glVertex3fv((p, -d, -p))
+        glVertex3fv((-p, -d, -p))
+        glVertex3fv((-p, -d, p))
+
+    for i in range(num_stacks):
+        h = i / num_stacks
+        top_color = colorsys.hsv_to_rgb(h, 1.0, 1.0)
+        bottom_color = colorsys.hsv_to_rgb(h + 0.1, 1.0, 1.0)
+
+        glBegin(GL_QUAD_STRIP)
+    
+    for j in range(num_slices + 1):
+            angle = j * 2 * 3.14159 / num_slices
+            x = radius * math.cos(angle)
+            y = radius * math.sin(angle)
+            glVertex3f(x, y, h * height)
+            glVertex3f(x, y, (h + 1 / num_stacks) * height)
+    glEnd()
+
 def main():
     
     pressed = [False, False, False, False, False]
     x_rotation = 0
     y_rotation = 0
-    
     pygame.init()
     display = (800, 800)
     pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
@@ -78,6 +111,9 @@ def main():
                     pressed[3] = True
                 if event.key == pygame.K_d:
                     pressed[4] = True
+                if event.key == pygame.K_ESCAPE:
+                    x_rotation = 0
+                    y_rotation = 0
             if event.type == pygame.KEYUP and pressed[0]:
                 pressed[0] = False
                 pressed[1] = False
@@ -99,13 +135,35 @@ def main():
         glRotatef(y_rotation, 0, 1, 0)
         
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-        Cube()
+        Pipe()
         pygame.display.flip()
         pygame.time.wait(10)
 
 if __name__ == "__main__":
     main()
 
+##def draw_pipe(radius=0.25, thickness=0.05, height=1, num_slices=64, num_stacks=64):
+##    quadric = gluNewQuadric()
+##
+##    for i in range(num_stacks):
+##        h = i / num_stacks
+##        top_color = colorsys.hsv_to_rgb(h, 1.0, 1.0)
+##        bottom_color = colorsys.hsv_to_rgb(h + 0.1, 1.0, 1.0)
+##
+##        glBegin(GL_QUAD_STRIP)
+##
+##        for j in range(num_slices + 1):
+##            angle = j * 2 * 3.14159 / num_slices
+##            x = radius * math.cos(angle)
+##            y = radius * math.sin(angle)
+##
+##            glColor3f(*top_color)
+##            glVertex3f(x, y, h * height)
+##
+##            glColor3f(*bottom_color)
+##            glVertex3f(x, y, (h + 1 / num_stacks) * height)
+##
+##        glEnd()
         #glLoadIdentity() is a function in pyOpenGL that resets the
         #current modelview matrix to the identity matrix. This means
         #that it effectively resets any transformations that have been
