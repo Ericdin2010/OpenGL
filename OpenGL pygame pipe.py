@@ -77,39 +77,40 @@ def Pipe():
     pi = 3.141592653
     deltaAngle = pi / slices * 2
     angle = 0
-    SquareSize = math.sin(pi / slices)
-    surrentStack = SquareSize
+    squareSize = math.sin(pi / slices)
+    surrentStack = squareSize
     lastStack = 0
-    xShift = SquareSize / 2
+    xShift = squareSize / 2
     yShift = -0.5
-    zShift = -((SquareSize * stacks) / 2)
+    zShift = -((squareSize * stacks) / 2)
     
-    for stack in range(0, stacks - 1):
-        #for element in fileData[stack * slices]:
-        #if fileData[stack * slices] == fileData[stack * slices]
-        surrentStack = surrentStack + SquareSize
-        xOut = 0
-        yOut = 0
-        xLastOut = 0
-        yLastOut = 0
-        glBegin(GL_QUADS)
-        for fragment in range(0, slices - 1):
-            if fileData[stack][fragment] == '1':
-                glColor3fv(RED)
-            else:
-                glColor3fv(GREEN)
-            angle = angle + deltaAngle
-            xOut = xOut + math.cos(angle) * SquareSize
-            yOut = yOut + math.sin(angle) * SquareSize
+    for stack in range(0, stacks):
+        if (stack + 2) < stacks:
+            if fileData[stack] != fileData[stack + 1]:
+                surrentStack = surrentStack + squareSize
+                
+                xOut = 0
+                yOut = 0
+                xLastOut = 0
+                yLastOut = 0
+                glBegin(GL_QUADS)
+                for fragment in range(0, slices):
+                    if fileData[stack - 1][fragment - 1] == '1':
+                        glColor3fv(RED)
+                    else:
+                        glColor3fv(GREEN)
+                    angle = angle + deltaAngle
+                    xOut = xOut + math.cos(angle) * squareSize
+                    yOut = yOut + math.sin(angle) * squareSize
 
-            glVertex3fv((xLastOut + xShift, yLastOut + yShift, lastStack + zShift))
-            glVertex3fv((xLastOut + xShift, yLastOut + yShift, surrentStack + zShift))
-            glVertex3fv((xOut + xShift, yOut + yShift, surrentStack + zShift))
-            glVertex3fv((xOut + xShift, yOut + yShift, lastStack + zShift))
-            xLastOut = xOut
-            yLastOut = yOut
-        glEnd()
-        lastStack = surrentStack
+                    glVertex3fv((xLastOut + xShift, yLastOut + yShift, lastStack + zShift))
+                    glVertex3fv((xLastOut + xShift, yLastOut + yShift, surrentStack + zShift))
+                    glVertex3fv((xOut + xShift, yOut + yShift, surrentStack + zShift))
+                    glVertex3fv((xOut + xShift, yOut + yShift, lastStack + zShift))
+                    xLastOut = xOut
+                    yLastOut = yOut
+                glEnd()
+                lastStack = surrentStack
     glColor3fv(WHITE)
 
 RED = (215 / 256, 10 / 256, 10 / 256)
