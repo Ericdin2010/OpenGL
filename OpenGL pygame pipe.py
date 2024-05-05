@@ -4,21 +4,12 @@ import sys
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
-try:
-    import glfw
-    from OpenGL.GL import *
-    from OpenGL.GLU import *
-    from pygame.locals import *
-    import pygame
-    import math
-except ImportError:
-    os.system('pip3 install PyOpenGL PyOpenGL_accelerate glfw pygame')
-    import glfw
-    from OpenGL.GL import *
-    from OpenGL.GLU import *
-    from pygame.locals import *
-    import pygame
-    import math
+import glfw
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from pygame.locals import *
+import pygame
+import math
 
 verticies = ((0.5, -0.5, -0.5),
              (0.5, 0.5, -0.5),
@@ -43,10 +34,14 @@ edges = ((0,1),
 
 def ReadFile():
     global fileData
-    if os.path.isfile('file.txt') is True:
-        with open('file.txt', 'r') as file:
+    if os.path.isfile('data.txt') is True:
+        with open('data.txt', 'r') as file:
             data = file.read().replace('\n', '')
-            fileData = list(data)
+            data = data.split(' ')
+            fileData = []
+            for i in range(0, len(data) - 1):
+                fileData.append(list(data[i]))
+            print(fileData)
 
 def Cube():
     glBegin(GL_LINES)
@@ -76,31 +71,30 @@ def XYZLines():
 
 def Pipe():
     global RED, GREEN, BLUE, WHITE, fileData
-    radiusMax = 0.25
-    radiusMin = 0.20
-    thickness = 0.05
     height = 1
-    slices = 16
-    stacks = 1
-    surrentStack = 0
-    lastStack = 0
+    slices = 50
+    stacks = 40
     pi = 3.141592653
     deltaAngle = pi / slices * 2
     angle = 0
     SquareSize = math.sin(pi / slices)
+    surrentStack = SquareSize
+    lastStack = 0
     xShift = SquareSize / 2
-    yShift = 0
-    zShift = 0
-
-    for i in range(stacks):
+    yShift = -0.5
+    zShift = -((SquareSize * stacks) / 2)
+    
+    for stack in range(0, stacks - 1):
+        #for element in fileData[stack * slices]:
+        #if fileData[stack * slices] == fileData[stack * slices]
         surrentStack = surrentStack + SquareSize
         xOut = 0
         yOut = 0
         xLastOut = 0
         yLastOut = 0
         glBegin(GL_QUADS)
-        for i in range(slices):
-            if fileData[i]:
+        for fragment in range(0, slices - 1):
+            if fileData[stack][fragment] == '1':
                 glColor3fv(RED)
             else:
                 glColor3fv(GREEN)
@@ -116,7 +110,6 @@ def Pipe():
             yLastOut = yOut
         glEnd()
         lastStack = surrentStack
-
     glColor3fv(WHITE)
 
 RED = (215 / 256, 10 / 256, 10 / 256)
@@ -132,7 +125,9 @@ def main():
     x_rotation = 0
     y_rotation = 0
     pygame.init()
+    font = pygame.font.SysFont("Cansolas", 20)
     display = (800, 800)
+    clock = pygame.time.Clock()
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     glEnable(GL_DEPTH_TEST)
     glMatrixMode(GL_PROJECTION)
@@ -167,13 +162,13 @@ def main():
                 pressed[4] = False
 
         if pressed[1]:
-            x_rotation += 2.0
+            x_rotation += 5.0
         if pressed[2]:
-            x_rotation -= 2.0
+            x_rotation -= 5.0
         if pressed[3]:
-            y_rotation += 2.0
+            y_rotation += 5.0
         if pressed[4]:
-            y_rotation -= 2.0
+            y_rotation -= 5.0
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
@@ -183,9 +178,10 @@ def main():
         
         XYZLines()
         Pipe()
-        #Cube()
+        
+        fps = clock.get_fps()
         pygame.display.flip()
-        pygame.time.wait(10)
+        clock.tick(60)
 
 if __name__ == "__main__":
     main()
