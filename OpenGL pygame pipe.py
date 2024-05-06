@@ -83,7 +83,7 @@ def Pipe():
     yShift = -0.5
     zShift = -((squareSize * stacks) / 2)
     stack = 0
-    
+
     while stack < stacks:
         if (stack + 1) < stacks:
             while fileData[stack] == fileData[stack + 1]:
@@ -128,8 +128,10 @@ def main():
     x_rotation = 0
     y_rotation = 0
     pygame.init()
-    font = pygame.font.SysFont("Cansolas", 20)
     display = (800, 800)
+    displayCenter = (400, 400)
+    deltaMousePos = [0, 0]
+    mousePos = [0, 0]
     clock = pygame.time.Clock()
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     glEnable(GL_DEPTH_TEST)
@@ -137,12 +139,22 @@ def main():
     gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
+    firstPerson = False
+    xPos = 0
+    yPos = 0
+    zPos = -5
     
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.MOUSEMOTION and firstPerson:
+                deltaMousePos[0] = event.pos[0] - displayCenter[0]
+                deltaMousePos[1] = event.pos[1] - displayCenter[1]
+                mousePos[0] += deltaMousePos[0]
+                mousePos[1] += deltaMousePos[1]
+                #print(mousePos)
             if event.type == pygame.KEYDOWN:
                 if not pressed[0]:
                     pressed[0] = True
@@ -154,34 +166,54 @@ def main():
                     pressed[3] = True
                 if event.key == pygame.K_d:
                     pressed[4] = True
-                if event.key == pygame.K_f or event.key == pygame.K_g:
+                if event.key == pygame.K_g:
                     fps = clock.get_fps()
                     print(fps)
+                if event.key == pygame.K_f:
+                    x_rotation = 0
+                    y_rotation = 0
+                    firstPerson = True
+                    pygame.mouse.set_pos(displayCenter)
+                    pygame.mouse.set_visible(False)
                 if event.key == pygame.K_ESCAPE:
                     x_rotation = 0
                     y_rotation = 0
+                    firstPerson = False
+                    xPos = 0
+                    yPos = 0
+                    zPos = -5
+                    pygame.mouse.set_visible(True)
             if event.type == pygame.KEYUP and pressed[0]:
                 pressed[0] = False
                 pressed[1] = False
                 pressed[2] = False
                 pressed[3] = False
                 pressed[4] = False
-
-        if pressed[1]:
-            x_rotation += 2.0
-        if pressed[2]:
-            x_rotation -= 2.0
-        if pressed[3]:
-            y_rotation += 2.0
-        if pressed[4]:
-            y_rotation -= 2.0
+        
+        if firstPerson:
+            x_rotation = mousePos[1]
+            y_rotation = mousePos[0]
+            pygame.mouse.set_pos(displayCenter)
+            if pressed[1]:
+                zPos += 0.1
+            if pressed[2]:
+                zPos -= 0.1
+        if not firstPerson:
+            if pressed[1]:
+                x_rotation += 2
+            if pressed[2]:
+                x_rotation -= 2
+            if pressed[3]:
+                y_rotation += 2
+            if pressed[4]:
+                y_rotation -= 2
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
-        glTranslatef(0.0, 0.0, -5)
+        glTranslatef(xPos, yPos, zPos)
         glRotatef(x_rotation, 1, 0, 0)
         glRotatef(y_rotation, 0, 1, 0)
-        
+
         XYZLines()
         Pipe()
         
