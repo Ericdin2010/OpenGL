@@ -4,7 +4,6 @@ import sys
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
-import glfw
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from pygame.locals import *
@@ -34,14 +33,14 @@ edges = ((0,1),
 
 def ReadFile():
     global fileData
-    if os.path.isfile('data.txt') is True:
-        with open('data.txt', 'r') as file:
-            data = file.read().replace('\n', '')
+    if os.path.isfile('file.txt') is True:
+        with open('file.txt', 'r') as file:
+            data = file.read().replace('\n', ' ')
             data = data.split(' ')
             fileData = []
-            for i in range(0, len(data) - 1):
+            for i in range(0, len(data)):
                 fileData.append(list(data[i]))
-            print(fileData)
+            #print(fileData)
 
 def Cube():
     glBegin(GL_LINES)
@@ -78,39 +77,42 @@ def Pipe():
     deltaAngle = pi / slices * 2
     angle = 0
     squareSize = math.sin(pi / slices)
-    surrentStack = squareSize
+    surrentStack = 0
     lastStack = 0
     xShift = squareSize / 2
     yShift = -0.5
     zShift = -((squareSize * stacks) / 2)
+    stack = 0
     
-    for stack in range(0, stacks):
-        if (stack + 2) < stacks:
-            if fileData[stack] != fileData[stack + 1]:
-                surrentStack = surrentStack + squareSize
-                
-                xOut = 0
-                yOut = 0
-                xLastOut = 0
-                yLastOut = 0
-                glBegin(GL_QUADS)
-                for fragment in range(0, slices):
-                    if fileData[stack - 1][fragment - 1] == '1':
-                        glColor3fv(RED)
-                    else:
-                        glColor3fv(GREEN)
-                    angle = angle + deltaAngle
-                    xOut = xOut + math.cos(angle) * squareSize
-                    yOut = yOut + math.sin(angle) * squareSize
+    while stack < stacks:
+        if (stack + 1) < stacks:
+            while fileData[stack] == fileData[stack + 1]:
+                stack += 1
+                surrentStack += squareSize
+        stack += 1
+        surrentStack += squareSize
+        xOut = 0
+        yOut = 0
+        xLastOut = 0
+        yLastOut = 0
+        glBegin(GL_QUADS)
+        for fragment in range(0, slices):
+            if fileData[stack - 1][fragment - 1] == '1':
+                glColor3fv(RED)
+            else:
+                glColor3fv(GREEN)
+            angle = angle + deltaAngle
+            xOut = xOut + math.cos(angle) * squareSize
+            yOut = yOut + math.sin(angle) * squareSize
 
-                    glVertex3fv((xLastOut + xShift, yLastOut + yShift, lastStack + zShift))
-                    glVertex3fv((xLastOut + xShift, yLastOut + yShift, surrentStack + zShift))
-                    glVertex3fv((xOut + xShift, yOut + yShift, surrentStack + zShift))
-                    glVertex3fv((xOut + xShift, yOut + yShift, lastStack + zShift))
-                    xLastOut = xOut
-                    yLastOut = yOut
-                glEnd()
-                lastStack = surrentStack
+            glVertex3fv((xLastOut + xShift, yLastOut + yShift, -lastStack - zShift))
+            glVertex3fv((xLastOut + xShift, yLastOut + yShift, -surrentStack - zShift))
+            glVertex3fv((xOut + xShift, yOut + yShift, -surrentStack - zShift))
+            glVertex3fv((xOut + xShift, yOut + yShift, -lastStack - zShift))
+            xLastOut = xOut
+            yLastOut = yOut
+        glEnd()
+        lastStack = surrentStack
     glColor3fv(WHITE)
 
 RED = (215 / 256, 10 / 256, 10 / 256)
@@ -152,6 +154,9 @@ def main():
                     pressed[3] = True
                 if event.key == pygame.K_d:
                     pressed[4] = True
+                if event.key == pygame.K_f or event.key == pygame.K_g:
+                    fps = clock.get_fps()
+                    print(fps)
                 if event.key == pygame.K_ESCAPE:
                     x_rotation = 0
                     y_rotation = 0
@@ -163,13 +168,13 @@ def main():
                 pressed[4] = False
 
         if pressed[1]:
-            x_rotation += 5.0
+            x_rotation += 2.0
         if pressed[2]:
-            x_rotation -= 5.0
+            x_rotation -= 2.0
         if pressed[3]:
-            y_rotation += 5.0
+            y_rotation += 2.0
         if pressed[4]:
-            y_rotation -= 5.0
+            y_rotation -= 2.0
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
@@ -180,9 +185,8 @@ def main():
         XYZLines()
         Pipe()
         
-        fps = clock.get_fps()
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(120)
 
 if __name__ == "__main__":
     main()
