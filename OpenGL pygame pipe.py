@@ -33,8 +33,8 @@ edges = ((0,1),
 
 def ReadFile():
     global fileData
-    if os.path.isfile('file.txt') is True:
-        with open('file.txt', 'r') as file:
+    if os.path.isfile('file.prb') is True:
+        with open('file.prb', 'r') as file:
             data = file.read().replace('\n', ' ')
             data = data.split(' ')
             fileData = []
@@ -72,7 +72,7 @@ def Pipe():
     global RED, GREEN, BLUE, WHITE, fileData
     height = 1
     slices = 50
-    stacks = 40
+    stacks = len(fileData)
     pi = 3.141592653
     deltaAngle = pi / slices * 2
     angle = 0
@@ -124,7 +124,7 @@ fileData = []
 
 def main():
     ReadFile()
-    pressed = [False, False, False, False, False]
+    pressed = [False, False, False, False, False, False, False]
     x_rotation = 0
     y_rotation = 0
     pygame.init()
@@ -166,6 +166,10 @@ def main():
                     pressed[3] = True
                 if event.key == pygame.K_d:
                     pressed[4] = True
+                if event.key == pygame.K_q:
+                    pressed[5] = True
+                if event.key == pygame.K_e:
+                    pressed[6] = True
                 if event.key == pygame.K_g:
                     fps = clock.get_fps()
                     print(fps)
@@ -189,6 +193,8 @@ def main():
                 pressed[2] = False
                 pressed[3] = False
                 pressed[4] = False
+                pressed[5] = False
+                pressed[6] = False
         
         if firstPerson:
             x_rotation = mousePos[1]
@@ -207,6 +213,10 @@ def main():
                 y_rotation += 2
             if pressed[4]:
                 y_rotation -= 2
+            if pressed[5]:
+                zPos += 0.1
+            if pressed[6]:
+                zPos -= 0.1
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
